@@ -1,10 +1,12 @@
 from flask import Flask, request, render_template
 import numpy as np
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 import json
 
 # Load TFLite model
-interpreter = tf.lite.Interpreter(model_path="SoilSuitabilityModel.tflite")
+interpreter = tflite.Interpreter(
+    model_path="SoilSuitabilityModel.tflite"
+)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
