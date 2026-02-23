@@ -4,10 +4,10 @@ import json
 
 # Load TFLite model
 
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
 
-interpreter = tflite.Interpreter(
-    model_path="SoilSuitabilityModel.tflite"
+interpreter = tf.lite.Interpreter(
+    model_path="predictor_assets/SoilSuitabilityModel.tflite"
 )
 
 interpreter.allocate_tensors()
