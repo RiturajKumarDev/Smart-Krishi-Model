@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 import json
 
 app = FastAPI()
@@ -16,7 +16,9 @@ app.add_middleware(
 )
 
 # Load model
-interpreter = tf.lite.Interpreter(model_path="SoilSuitabilityModel.tflite")
+interpreter = tflite.Interpreter(
+    model_path="SoilSuitabilityModel.tflite"
+)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
