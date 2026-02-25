@@ -1,39 +1,53 @@
-from flask import Flask, request, render_template
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 import tensorflow as tf
 import json
 
-# Load TFLite model
+app = FastAPI()
+
+# 🔥 CORS FIX
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Load model
 interpreter = tf.lite.Interpreter(model_path="SoilSuitabilityModel.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# Load crop labels
+# Labels
 with open("crop_labels.json") as f:
     crop_labels = json.load(f)
 
-# Load scaler
+# Scaler
 with open("soil_scaler.json") as f:
     scaler = json.load(f)
 
 mean = np.array(scaler["mean"])
 std = np.array(scaler["std"])
 
-app = Flask(__name__)
 
+@app.post("/predict")
+async def predict(data: dict):
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+    features = [
+        data["nitrogen"],
+        data["phosphorus"],
+        data["potassium"],
+        data["temperature"],
+        data["humidity"],
+        data["ph"],
+        data["rainfall"],
+    ]
 
-
-@app.route("/predict", methods=["POST"])
-def predict():
-    features = [float(x) for x in request.form.values()]
-
-    # 🔥 APPLY NORMALIZATION
     scaled = (np.array(features) - mean) / std
     input_data = np.array([scaled], dtype=np.float32)
 
@@ -44,10 +58,4 @@ def predict():
     predicted_index = int(np.argmax(prediction[0]))
     crop_name = crop_labels[predicted_index]
 
-    return render_template(
-        "index.html", prediction_text=f"Recommended Crop: {crop_name}"
-    )
-
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
+    return {"recommended_crop": crop_name, "confidence": float(np.max(prediction[0]))}

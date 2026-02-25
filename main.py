@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
 import json
 
 app = FastAPI()
 
-# 🔥 CORS FIX
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,12 +15,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 # Load model
-interpreter = tflite.Interpreter(
-    model_path="SoilSuitabilityModel.tflite"
-)
+interpreter = tf.lite.Interpreter(model_path="SoilSuitabilityModel.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -36,6 +32,11 @@ with open("soil_scaler.json") as f:
 
 mean = np.array(scaler["mean"])
 std = np.array(scaler["std"])
+
+
+@app.get("/")
+def home():
+    return {"message": "Smart Krishi API Running"}
 
 
 @app.post("/predict")
@@ -61,4 +62,7 @@ async def predict(data: dict):
     predicted_index = int(np.argmax(prediction[0]))
     crop_name = crop_labels[predicted_index]
 
-    return {"recommended_crop": crop_name, "confidence": float(np.max(prediction[0]))}
+    return {
+        "recommended_crop": crop_name,
+        "confidence": float(np.max(prediction[0])),
+    }
