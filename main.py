@@ -5,14 +5,14 @@ import json
 import os
 import sys
 
-# Try importing tflite_runtime, fallback to tensorflow if needed
+# Top par yeh import handling add karo
 try:
     import tflite_runtime.interpreter as tflite
     print("✅ Using tflite_runtime")
 except ImportError:
     import tensorflow as tf
     tflite = tf.lite
-    print("✅ Using TensorFlow Lite")
+    print("✅ Using TensorFlow Lite as fallback")
 
 app = FastAPI()
 
