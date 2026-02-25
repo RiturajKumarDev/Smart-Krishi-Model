@@ -2,7 +2,8 @@ services:
   - type: web
     name: smart-krishi-model
     runtime: python
+    region: oregon
+    plan: free
+    pythonVersion: 3.11.9
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    plan: free
-    pythonVersion: 3.11  # Add this line
